@@ -1,0 +1,2 @@
+Si el MINVU bloquea la descarga automática, sube aquí el Excel (por ejemplo "SU-Otorgados-1990-a-Noviembre-2026.xlsx").
+Al subirlo, el sistema actualiza el dashboard solo.
