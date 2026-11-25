@@ -1,0 +1,45 @@
+name: Actualizar subsidios MINVU
+
+on:
+  schedule:
+    - cron: "0 12 * * *"
+  workflow_dispatch:
+    inputs:
+      forzar:
+        description: "Regenerar aunque el Excel no haya cambiado"
+        type: boolean
+        default: false
+  push:
+    paths:
+      - "fuente/*.xlsx"
+
+permissions:
+  contents: write
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: |
+          sudo apt-get update -y && sudo apt-get install -y fonts-liberation
+          pip install openpyxl python-docx matplotlib
+
+      - name: Actualizar desde la página del MINVU
+        if: github.event_name != 'push'
+        run: python etl/actualizar.py ${{ inputs.forzar && '--forzar' || '' }}
+
+      - name: Actualizar desde un Excel subido a fuente/
+        if: github.event_name == 'push'
+        run: python etl/actualizar.py --forzar --archivo "$(ls -t fuente/*.xlsx | head -1)"
+
+      - name: Publicar cambios
+        run: |
+          git config user.name "CChC O'Higgins - Estudios (automático)"
+          git config user.email "actions@users.noreply.github.com"
